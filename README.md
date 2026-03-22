@@ -1,22 +1,29 @@
-# The DROID Robot Platform
+# PolaRiS Bench Real World Evals
 
-This repository contains the code for setting up your DROID robot platform and using it to collect teleoperated demonstration data. This platform was used to collect the [DROID dataset](https://droid-dataset.github.io), a large, in-the-wild dataset of robot manipulations.
+## Installation
+Install UV following [this link](https://docs.astral.sh/uv/getting-started/installation/) if not already installed
 
-If you are interested in using the DROID dataset for training robot policies, please check out our [policy learning repo](https://github.com/droid-dataset/droid_policy_learning).
-For more information about DROID, please see the following links: 
+```bash
+uv sync
+```
 
-[**[Homepage]**](https://droid-dataset.github.io) &ensp; [**[Documentation]**](https://droid-dataset.github.io/droid) &ensp; [**[Paper]**](https://arxiv.org/abs/2403.12945) &ensp; [**[Dataset Visualizer]**](https://droid-dataset.github.io/dataset.html).
+Install ZED Python API (assuming you already have ZED SDK installed on your system, which you should for DROID)
+```bash
+source .venv/bin/activate
+python /usr/local/zed/get_python_api.py
+# This will install a pyzed wheel in your local directory, install it to your venv
+uv pip install ./path-to-pyzed.wh
+```
 
-![](https://droid-dataset.github.io/droid/assets/index/droid_teaser.jpg)
+Copy your DROID parameters file to this repo
+```bash
+cp /path/to/your/parameters.py ./droid/misc/parameters.py
+```
 
----------
-## Setup Guide
+## Running Evals
+TODO: make table for policies available
 
-We assembled a step-by-step guide for setting up the DROID robot platform in our [developer documentation](https://droid-dataset.github.io/droid).
-This guide has been used to set up 18 DROID robot platforms over the course of the DROID dataset collection. Please refer to the steps in this guide for setting up your own robot. Specifically, you can follow these key steps:
-
-1. [Hardware Assembly and Setup](https://droid-dataset.github.io/droid/docs/hardware-setup)
-2. [Software Installation and Setup](https://droid-dataset.github.io/droid/docs/software-setup)
-3. [Example Workflows to collect data or calibrate cameras](https://droid-dataset.github.io/droid/docs/example-workflows)
-
-If you encounter issues during setup, please raise them as issues in this github repo.
+TODO: eval script which
+- Stores all trajectory (frames, proprioception, camera extrinsics...) using DROID trajectory writer
+- Success/progress labels
+- Restoring initial conditions?
