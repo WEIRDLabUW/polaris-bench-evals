@@ -45,14 +45,16 @@ def write_dict_to_hdf5(hdf5_file, data_dict, keys_to_ignore=["image", "depth", "
 
 
 class TrajectoryWriter:
-    def __init__(self, filepath, metadata=None, exists_ok=False, save_images=True):
+    def __init__(self, filepath, metadata=None, exists_ok=False, save_images=True, save_raw_frames=False):
         assert (not os.path.isfile(filepath)) or exists_ok
         self._filepath = filepath
         self._save_images = save_images
+        self._save_raw_frames = save_raw_frames
         self._hdf5_file = h5py.File(filepath, "w")
         self._queue_dict = defaultdict(Queue)
         self._video_writers = {}
         self._video_files = {}
+        self._frame_buffers = defaultdict(list)
         self._open = True
 
         # Add Metadata #
@@ -86,21 +88,25 @@ class TrajectoryWriter:
     def _update_video_files(self, timestep):
         image_dict = timestep["observations"]["image"]
 
-        for video_id in image_dict:
+        for video_id in list(image_dict.keys()):
             # Get Frame #
             img = image_dict[video_id]
             del image_dict[video_id]
 
-            # Create Writer And Buffer #
-            if video_id not in self._video_buffers:
-                filename = self.create_video_file(video_id, ".mp4")
-                self._video_writers[video_id] = imageio.get_writer(filename, macro_block_size=1)
-                run_threaded_command(
-                    self._write_from_queue, args=(self._video_writers[video_id].append_data, self._queue_dict[video_id])
-                )
+            if self._save_raw_frames:
+                # Store raw frame for later HDF5 write #
+                self._frame_buffers[video_id].append(np.array(img))
+            else:
+                # Create Writer And Buffer #
+                if video_id not in self._video_writers:
+                    filename = self.create_video_file(video_id, ".mp4")
+                    self._video_writers[video_id] = imageio.get_writer(filename, macro_block_size=1)
+                    run_threaded_command(
+                        self._write_from_queue, args=(self._video_writers[video_id].append_data, self._queue_dict[video_id])
+                    )
 
-            # Add Image To Queue #
-            self._queue_dict[video_id].put(img)
+                # Add Image To Queue #
+                self._queue_dict[video_id].put(img)
 
         del timestep["observations"]["image"]
 
@@ -120,6 +126,13 @@ class TrajectoryWriter:
         # Close Video Writers #
         for video_id in self._video_writers:
             self._video_writers[video_id].close()
+
+        # Save Raw Frames #
+        for video_id, frames in self._frame_buffers.items():
+            if "frames" not in self._hdf5_file["observations"]:
+                self._hdf5_file["observations"].create_group("frames")
+            stacked = np.stack(frames, axis=0)
+            self._hdf5_file["observations"]["frames"].create_dataset(video_id, data=stacked)
 
         # Save Serialized Videos #
         for video_id in self._video_files:

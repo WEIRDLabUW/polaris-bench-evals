@@ -27,6 +27,7 @@ def collect_trajectory(
     obs_pointer=None,
     save_images=False,
     recording_folderpath=False,
+    save_raw_frames=False,
     randomize_reset=False,
     reset_robot=True,
 ):
@@ -55,7 +56,7 @@ def collect_trajectory(
 
     # Prepare Data Writers If Necesary #
     if save_filepath:
-        traj_writer = TrajectoryWriter(save_filepath, metadata=metadata, save_images=save_images)
+        traj_writer = TrajectoryWriter(save_filepath, metadata=metadata, save_images=save_images, save_raw_frames=save_raw_frames)
     if recording_folderpath:
         env.camera_reader.start_recording(recording_folderpath)
 

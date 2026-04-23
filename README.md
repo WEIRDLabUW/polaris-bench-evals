@@ -20,10 +20,27 @@ Copy your DROID parameters file to this repo
 cp /path/to/your/parameters.py ./droid/misc/parameters.py
 ```
 
+## Configure Tasks
+In the `evals` folder, create a JSON for your task like below. Specify the progress criteria like below (ideally these can be implemented in simulation). Try to use the naming convention: `Institution-Task-#`. Try to keep tasks mostly rigid-body and simulatable.
+
+`evals/uw-task-1.json`
+```json
+{
+    "instruction": "stack the cubes on the green tray",
+    "criteria": [
+        "One block on tray",
+        "Second block on tray",
+        "Both blocks stacked on each other on tray"
+    ]
+}
+```
+
+
 ## Running Evals
 TODO: make table for policies available
 
 TODO: eval script which
 - Stores all trajectory (frames, proprioception, camera extrinsics...) using DROID trajectory writer
+    - modified to save raw frames instead of compression to haev 1:1 comparison for video model eval
 - Success/progress labels
 - Restoring initial conditions?
